@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+use function Naf\View\s;
+
+?>
+<p id="result"><?= s($query) ?></p>
+<?php if ($query !== 'remove'): ?>
+<input id="draft" value="server">
+<section id="child" flow="counter" flow-props='{"initial":4}'>
+    <button flow-on:click="increment">Child</button>
+    <output class="count" flow-text="count"></output>
+</section>
+<?php endif; ?>
+<?php if ($query === 'unsafe'): ?>
+<button id="unsafe" onclick="window.fragmentScript = true">Unsafe handler</button>
+<script>window.fragmentScript = true;</script>
+<?php endif; ?>

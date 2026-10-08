@@ -1,0 +1,11 @@
+/vendor/
+/node_modules/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+/test-results/
+/playwright-report/
+/tests/Fixtures/storage/
+/tests/Fixtures/logs/
+/.idea/
+.DS_Store
