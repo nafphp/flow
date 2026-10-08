@@ -346,6 +346,29 @@ test('props update without remounting or overwriting locally edited state', asyn
     expect(await page.evaluate(() => window.fixture.events.filter(event => event === 'counter:mount'))).toHaveLength(1);
 });
 
+test('the minified module preserves named exports and shares the automatic runtime', async ({ page }) => {
+    const result = await page.evaluate(async () => {
+        const { Flow, FlowHttpError } = await import('/_flow/flow.js');
+        const error = new FlowHttpError(new Response('', { status: 409 }), { conflict: true });
+
+        return {
+            shared: Flow === window.fixture.Flow,
+            className: FlowHttpError.name,
+            errorName: error.name,
+            status: error.status,
+            data: error.data,
+        };
+    });
+
+    expect(result).toEqual({
+        shared: true,
+        className: 'FlowHttpError',
+        errorName: 'FlowHttpError',
+        status: 409,
+        data: { conflict: true },
+    });
+});
+
 test('PHP page helper distinguishes full pages and fragments, runtime route is bounded and cacheable', async ({ request }) => {
     const page = await request.get('/fragment?q=full');
     expect(await page.text()).toContain('<!doctype html>');

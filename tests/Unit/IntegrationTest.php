@@ -37,8 +37,20 @@ final class IntegrationTest extends TestCase
         self::assertSame('text/javascript; charset=UTF-8', $response->getHeaderLine('Content-Type'));
         self::assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
         self::assertSame('public, max-age=0, must-revalidate', $response->getHeaderLine('Cache-Control'));
-        self::assertStringContainsString('export const Flow', (string) $response->getBody());
         self::assertSame('"' . hash('sha256', (string) $response->getBody()) . '"', $response->getHeaderLine('ETag'));
+    }
+
+    public function testRuntimeServesTheShippedMinifiedModule(): void
+    {
+        $publicPath = dirname(__DIR__, 2) . '/src/Resources/public/';
+        $source     = file_get_contents($publicPath . 'flow.js');
+        $minified   = file_get_contents($publicPath . 'flow.min.js');
+
+        self::assertIsString($source);
+        self::assertIsString($minified);
+        self::assertSame($minified, (string) (new RuntimeController())->show()->getBody());
+        self::assertLessThan(strlen($source), strlen($minified));
+        self::assertStringContainsString('NAF Flow', $minified);
     }
 
     public function testWeakAndListedEtagsReturnAnEmptyNotModifiedResponse(): void

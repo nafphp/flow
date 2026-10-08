@@ -33,7 +33,8 @@ check(function_exists('Naf\\Flow\\page'), 'The Flow page helper was not loaded.'
 $application->container()->set(RequestInterface::class, new ServerRequest('GET', '/_flow/flow.js'));
 $runtime = (new RuntimeController())->show();
 check($runtime->getStatusCode() === 200, 'The installed runtime could not be served.');
-check(str_contains((string) $runtime->getBody(), 'export const Flow'), 'The runtime module is incomplete.');
+$minifiedPath = InstalledVersions::getInstallPath('naf/flow') . '/src/Resources/public/flow.min.js';
+check((string) $runtime->getBody() === file_get_contents($minifiedPath), 'The shipped minified runtime was not served.');
 
 echo 'Installed host discovery, boot order, assets, routes and helper passed: '
     . InstalledVersions::getInstallPath('naf/flow') . PHP_EOL;

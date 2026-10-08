@@ -14,7 +14,7 @@ final class RuntimeController
 {
     public function show(): ResponseInterface
     {
-        $contents = file_get_contents(dirname(__DIR__) . '/Resources/public/flow.js');
+        $contents = file_get_contents(dirname(__DIR__) . '/Resources/public/flow.min.js');
         if ($contents === false) {
             throw new RuntimeException('The NAF Flow runtime is missing.');
         }
