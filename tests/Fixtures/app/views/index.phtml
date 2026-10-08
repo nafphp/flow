@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+use function Naf\Form\csrf;
+use function Naf\View\asset;
+use function Naf\View\s;
+
+$token = csrf()->generate();
+?>
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Flow integration</title><?= asset()->render('js') ?></head>
+<body>
+    <section id="counter" flow="counter" flow-props='{"initial":2}'>
+        <button type="button" flow-on:click="increment">Increment</button>
+        <output class="count" flow-text="count"></output>
+        <output class="doubled" flow-text="doubled"></output>
+        <output class="private" flow-text="secret"></output>
+        <span class="visible" flow-show="count" flow-class:active="count" flow-bind:aria-expanded="count"></span>
+    </section>
+    <section id="factory" flow="factory"><button flow-on:click="increment">Factory</button><output flow-text="count"></output></section>
+    <section id="search" flow="search">
+        <input name="q" flow-model="query">
+        <output id="query" flow-text="query"></output>
+        <output id="error" flow-text="error"></output>
+        <output id="nested-value" flow-text="filters.term"></output>
+        <output id="array-count" flow-text="rowCount"></output>
+        <div id="results" flow-ref="results"><p id="result">Initial results</p></div>
+    </section>
+    <section id="store-a" flow="store-view"><button flow-on:click="increment">Store</button><output flow-text="filters.count"></output></section>
+    <section id="store-b" flow="store-view"><output flow-text="filters.count"></output></section>
+    <section id="late" flow="late"><output flow-text="value"></output></section>
+    <form id="csrf-form"><input type="hidden" name="_csrf" value="<?= s($token) ?>"><input name="name" value="Ada"></form>
+    <div id="manual"><button flow-on:click="increment">Manual</button><output flow-text="count"></output></div>
+</body>
+</html>

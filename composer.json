@@ -1,0 +1,33 @@
+{
+    "name": "naf/flow",
+    "description": "Reactive JavaScript components and HTML updates for NAF, automatically integrated with naf/view.",
+    "type": "naf-plugin",
+    "license": "MIT",
+    "authors": [{ "name": "Flo Knapp", "email": "office@florianknapp.de" }],
+    "require": {
+        "php": ">=8.3",
+        "naf/framework": "^0.2.7",
+        "naf/view": "^0.2"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "3.95.25",
+        "naf/form": "^0.2.3",
+        "phpunit/phpunit": "^11.5 || ^12.1"
+    },
+    "autoload": {
+        "psr-4": { "Naf\\Flow\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Tests\\": "tests/" }
+    },
+    "scripts": {
+        "test": [
+            "@php vendor/bin/phpunit --colors=always",
+            "@php tests/host.php"
+        ],
+        "style:check": "@php vendor/bin/php-cs-fixer fix --dry-run --diff --sequential",
+        "style:fix": "@php vendor/bin/php-cs-fixer fix --sequential"
+    },
+    "config": { "platform": { "php": "8.3.0" } },
+    "extra": { "naf": { "boot": { "after": ["naf/view"] } } }
+}
