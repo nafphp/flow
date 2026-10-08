@@ -27,6 +27,10 @@ export function createClient(owner, applyFragment) {
     }
 
     async function load(url, options = {}) {
+        // A disposed client must not cancel another owner's current target request.
+        if (owner && !owner.alive) {
+            throw abortError();
+        }
         const target = resolveTarget(owner, options.target);
         const previous = loads.get(target);
         previous?.controller.abort();

@@ -33,7 +33,7 @@ export function patchChildren(parent, desired, lifecycle) {
         if (candidate && !usedNodes.has(candidate) && canReuse(candidate, next)) {
             node = candidate;
             if (node !== cursor) {
-                parent.insertBefore(node, cursor);
+                moveNode(parent, node, cursor);
             }
             morph(node, next, lifecycle);
         } else {
@@ -49,6 +49,20 @@ export function patchChildren(parent, desired, lifecycle) {
         const next = cursor.nextSibling;
         lifecycle.removeNode(cursor);
         cursor = next;
+    }
+}
+
+function moveNode(parent, node, before) {
+    if (typeof parent.moveBefore === 'function') {
+        parent.moveBefore(node, before);
+        return;
+    }
+
+    // Older browsers detach/reinsert during a move, which blurs a focused descendant.
+    const focused = node.contains(document.activeElement) ? document.activeElement : null;
+    parent.insertBefore(node, before);
+    if (focused?.isConnected && document.activeElement !== focused) {
+        focused.focus({ preventScroll: true });
     }
 }
 

@@ -391,6 +391,81 @@ test('the bundled runtime works with one public module and no internal module re
     expect((await page.request.get('/_flow/runtime/components.js')).status()).toBe(404);
 });
 
+test('a disposed client cannot cancel a current load into its former container', async ({ page }) => {
+    const result = await page.evaluate(async () => {
+        const { Flow } = window.fixture;
+        const root = document.createElement('section');
+        root.innerHTML = '<div flow-ref="results">before</div>';
+        document.body.append(root);
+        let context;
+        const dispose = Flow.mount(root, { init(value) { context = value; } });
+        await Promise.resolve();
+        dispose();
+
+        const target = root.querySelector('div');
+        const originalFetch = window.fetch;
+        let finish;
+        let aborted = false;
+        window.fetch = async (url, options) => {
+            options.signal.addEventListener('abort', () => { aborted = true; });
+            await new Promise(resolve => { finish = resolve; });
+            return new Response('<p>current</p>', {
+                headers: { 'Content-Type': 'text/html', 'X-Flow': 'fragment' },
+            });
+        };
+        try {
+            const current = Flow.client.load('/current', { target });
+            let staleError;
+            try { await context.client.load('/stale', { target }); }
+            catch (error) { staleError = error.name; }
+            finish();
+            let currentError = null;
+            try { await current; } catch (error) { currentError = error.name; }
+            return { aborted, staleError, currentError, text: target.textContent };
+        } finally {
+            window.fetch = originalFetch;
+            root.remove();
+        }
+    });
+    expect(result).toEqual({ aborted: false, staleError: 'AbortError', currentError: null, text: 'current' });
+});
+
+for (const mode of ['native', 'fallback']) {
+    test(`keyed reordering preserves input identity, focus and selection (${mode})`, async ({ page }) => {
+        const result = await page.evaluate(async mode => {
+            const root = document.createElement('section');
+            root.innerHTML = '<div flow-key="first">First</div><div flow-key="draft"><input value="server"></div>';
+            document.body.append(root);
+            if (mode === 'fallback') Object.defineProperty(root, 'moveBefore', { value: undefined });
+            const input = root.querySelector('input');
+            input.value = 'my draft';
+            input.focus();
+            input.setSelectionRange(1, 4, 'backward');
+            const originalFetch = window.fetch;
+            window.fetch = async () => new Response(
+                '<div flow-key="draft"><input value="new server"></div><div flow-key="first">First</div>',
+                { headers: { 'Content-Type': 'text/html', 'X-Flow': 'fragment' } },
+            );
+            try {
+                await window.fixture.Flow.client.load('/reorder', { target: root });
+                return {
+                    sameInput: input === root.querySelector('input'),
+                    focused: document.activeElement === input,
+                    value: input.value,
+                    selection: [input.selectionStart, input.selectionEnd, input.selectionDirection],
+                    order: [...root.children].map(node => node.getAttribute('flow-key')),
+                };
+            } finally {
+                window.fetch = originalFetch;
+                root.remove();
+            }
+        }, mode);
+        expect(result).toEqual({
+            sameInput: true, focused: true, value: 'my draft', selection: [1, 4, 'backward'], order: ['draft', 'first'],
+        });
+    });
+}
+
 test('PHP page helper distinguishes full pages and fragments, runtime route is bounded and cacheable', async ({ request }) => {
     const page = await request.get('/fragment?q=full');
     expect(await page.text()).toContain('<!doctype html>');
