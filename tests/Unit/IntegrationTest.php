@@ -48,8 +48,10 @@ final class IntegrationTest extends TestCase
 
         self::assertIsString($source);
         self::assertIsString($minified);
+        $modules    = glob($publicPath . 'runtime/*.js') ?: [];
+        $sourceSize = strlen($source) + array_sum(array_map('filesize', $modules));
         self::assertSame($minified, (string) (new RuntimeController())->show()->getBody());
-        self::assertLessThan(strlen($source), strlen($minified));
+        self::assertLessThan($sourceSize, strlen($minified));
         self::assertStringContainsString('NAF Flow', $minified);
     }
 

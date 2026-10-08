@@ -348,10 +348,12 @@ test('props update without remounting or overwriting locally edited state', asyn
 
 test('the minified module preserves named exports and shares the automatic runtime', async ({ page }) => {
     const result = await page.evaluate(async () => {
-        const { Flow, FlowHttpError } = await import('/_flow/flow.js');
+        const module = await import('/_flow/flow.js');
+        const { Flow, FlowHttpError } = module;
         const error = new FlowHttpError(new Response('', { status: 409 }), { conflict: true });
 
         return {
+            exports: Object.keys(module).sort(),
             shared: Flow === window.fixture.Flow,
             className: FlowHttpError.name,
             errorName: error.name,
@@ -361,12 +363,32 @@ test('the minified module preserves named exports and shares the automatic runti
     });
 
     expect(result).toEqual({
+        exports: ['Flow', 'FlowHttpError'],
         shared: true,
         className: 'FlowHttpError',
         errorName: 'FlowHttpError',
         status: 409,
         data: { conflict: true },
     });
+});
+
+test('the bundled runtime works with one public module and no internal module requests', async ({ page }) => {
+    const runtimeRequests = [];
+    page.on('request', request => {
+        const pathname = new URL(request.url()).pathname;
+        if (request.resourceType() === 'script' && pathname.startsWith('/_flow/')) {
+            runtimeRequests.push(pathname);
+        }
+    });
+
+    await page.reload();
+    await page.locator('#counter button').click();
+    await expect(page.locator('#counter .doubled')).toHaveText('6');
+    await page.locator('#search input[name=q]').fill('bundled');
+    await expect(page.locator('#result')).toHaveText('bundled');
+    expect(runtimeRequests).toEqual(['/_flow/flow.js']);
+    expect(await page.evaluate(() => window.fixture.errors)).toEqual([]);
+    expect((await page.request.get('/_flow/runtime/components.js')).status()).toBe(404);
 });
 
 test('PHP page helper distinguishes full pages and fragments, runtime route is bounded and cacheable', async ({ request }) => {

@@ -9,9 +9,9 @@
         "test": "playwright test",
         "test:ui": "playwright test --ui",
         "check": "node --check src/Resources/public/flow.js && node --check src/Resources/public/flow.min.js",
-        "build": "esbuild src/Resources/public/flow.js --minify --keep-names --format=esm --target=es2022 --legal-comments=inline --outfile=src/Resources/public/flow.min.js",
-        "style:check": "prettier --check src/Resources/public/flow.js",
-        "style:fix": "prettier --write src/Resources/public/flow.js"
+        "build": "esbuild src/Resources/public/flow.js --bundle --minify --keep-names --format=esm --target=es2022 --legal-comments=inline --outfile=src/Resources/public/flow.min.js",
+        "style:check": "prettier --check src/Resources/public/flow.js \"src/Resources/public/runtime/**/*.js\"",
+        "style:fix": "prettier --write src/Resources/public/flow.js \"src/Resources/public/runtime/**/*.js\""
     },
     "devDependencies": {
         "@playwright/test": "1.64.0",

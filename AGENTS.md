@@ -18,12 +18,18 @@ the maintainer. Review documentation with every behavior change.
   Asset tags and application imports use this same URL to share one module instance.
   Never expose arbitrary vendor paths.
 - `src/functions.php` selects an explicitly named full-page or fragment template.
-- `src/Resources/public/flow.js` contains the browser runtime. No `eval`, `new Function`,
-  inline expression parser or execution of scripts from fragments.
+- `src/Resources/public/flow.js` is the public API and autostart entry point. Implementation
+  lives in `src/Resources/public/runtime/`: components/lifecycle, bindings, reactivity,
+  updates, stores, client/HTTP, DOM reconciliation, fragment parsing, properties and errors.
+  No `eval`, `new Function`, inline expression parser or execution of scripts from fragments.
+- Keep modules focused and imports acyclic. `components.js` owns component registration
+  and disposal; the client and DOM code receive small callbacks for fragment application
+  and lifecycle work. Do not create a shared bag of mutable runtime state.
 - Keep this source readable with explicit control blocks and the package's Prettier rules.
   Generate `flow.min.js` with `npm run build` after source changes and commit it alongside
-  the source. Do not edit the generated file. The single esbuild command preserves ESM
-  exports, function/class names and the license; applications need no frontend build.
+  the source modules. Do not edit the generated file. The single esbuild command bundles
+  all internal imports into one ESM file, preserving the public exports, function/class
+  names and license. Applications need no frontend build or access to internal source files.
 - Keep native class receivers intact, including methods accessing private `#fields`.
   Public fields are declared before mounting. Lifecycle hooks and prototype traversal
   are not markup actions. Nested components own their own bindings and references.
