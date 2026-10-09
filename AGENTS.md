@@ -8,7 +8,7 @@ Read the [shared workflow](https://github.com/nafphp/docs/blob/main/AGENT_WORKFL
 [release procedure](https://github.com/nafphp/docs/blob/main/RELEASING.md) and
 [code style](https://github.com/nafphp/docs/blob/main/CODE_STYLE.md). In the workspace,
 these are available in sibling `docs/`. Package code uses an RC branch and is merged by
-the maintainer. Review documentation with every behavior change.
+the maintainer.
 
 ## Boundaries
 
@@ -35,6 +35,20 @@ the maintainer. Review documentation with every behavior change.
   are not markup actions. Nested components own their own bindings and references.
 - HTTP writes keep NAF's existing authentication, validation and CSRF. The browser
   client never retries writes. Superseded loads and disposed instances cannot update DOM.
+
+## Documentation is part of every change
+
+Always review and update the affected user documentation alongside code, configuration,
+API or behavior changes and every release. The authoritative Flow guide is
+[`docs/pages/flow.md`](https://github.com/nafphp/docs/blob/main/pages/flow.md); also update
+affected plugin/view guides, examples, navigation and generated references. Keep the
+documented installation, component factories, lifecycle, bindings, stores, client,
+fragments, assets and CSP behavior aligned with the implementation.
+
+Follow the [shared documentation workflow](https://github.com/nafphp/docs/blob/main/AGENT_WORKFLOW.md#documentation-is-part-of-every-change)
+for checks, publication and deployment verification. A README or draft does not replace
+the regular documentation for released behavior. If no documentation change is needed,
+explain why in the handover.
 
 ## Verify
 
